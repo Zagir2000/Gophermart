@@ -1,0 +1,44 @@
+package main
+
+import (
+	"flag"
+	"os"
+)
+
+type FlagVar struct {
+	runAddr             string
+	databaseUri         string
+	acuralSystemAddress string
+	migrationsDir       string
+}
+
+func NewFlagVarStruct() *FlagVar {
+	return &FlagVar{}
+}
+func (f *FlagVar) parseFlags() error {
+
+	// как аргумент -a со значением :8080 по умолчанию
+	// парсим переданные серверу аргументы в зарегистрированные переменные
+	flag.StringVar(&f.runAddr, "a", "localhost:8080", "address and port to run server")
+	flag.StringVar(&f.databaseUri, "d", "", "database connection address")
+	flag.StringVar(&f.acuralSystemAddress, "r", "", "address of the accrual system")
+	flag.StringVar(&f.migrationsDir, "m", "", "address of the accrual system")
+	flag.Parse()
+
+	if envRunAddr, ok := os.LookupEnv("RUN_ADDRESS"); ok {
+		f.runAddr = envRunAddr
+	}
+
+	if envDatabaseUri, ok := os.LookupEnv("DATABASE_URI"); ok {
+		f.databaseUri = envDatabaseUri
+	}
+
+	if envAcuralSystemAddress, ok := os.LookupEnv("ACCRUAL_SYSTEM_ADDRESS"); ok {
+		f.acuralSystemAddress = envAcuralSystemAddress
+	}
+
+	if envMigrationsDir, ok := os.LookupEnv("MIGRATIONS_DIR"); ok {
+		f.migrationsDir = envMigrationsDir
+	}
+	return nil
+}
