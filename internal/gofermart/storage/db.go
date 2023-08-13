@@ -58,7 +58,7 @@ func runMigrations(dsn string, migratePath string) error {
 	return nil
 }
 
-func (dB *PostgresDB) registerUser(ctx context.Context, login, password string) error {
+func (pgdb *PostgresDB) registerUser(ctx context.Context, login, password string) error {
 
 	return nil
 }
