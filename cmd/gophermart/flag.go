@@ -7,7 +7,7 @@ import (
 
 type FlagVar struct {
 	runAddr             string
-	databaseUri         string
+	databaseURI         string
 	acuralSystemAddress string
 	migrationsDir       string
 }
@@ -20,7 +20,7 @@ func (f *FlagVar) parseFlags() error {
 	// как аргумент -a со значением :8080 по умолчанию
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.StringVar(&f.runAddr, "a", "localhost:8080", "address and port to run server")
-	flag.StringVar(&f.databaseUri, "d", "", "database connection address")
+	flag.StringVar(&f.databaseURI, "d", "", "database connection address")
 	flag.StringVar(&f.acuralSystemAddress, "r", "", "address of the accrual system")
 	flag.StringVar(&f.migrationsDir, "m", "", "address of the accrual system")
 	flag.Parse()
@@ -29,8 +29,8 @@ func (f *FlagVar) parseFlags() error {
 		f.runAddr = envRunAddr
 	}
 
-	if envDatabaseUri, ok := os.LookupEnv("DATABASE_URI"); ok {
-		f.databaseUri = envDatabaseUri
+	if envDatabaseURI, ok := os.LookupEnv("DATABASE_URI"); ok {
+		f.databaseURI = envDatabaseURI
 	}
 
 	if envAcuralSystemAddress, ok := os.LookupEnv("ACCRUAL_SYSTEM_ADDRESS"); ok {

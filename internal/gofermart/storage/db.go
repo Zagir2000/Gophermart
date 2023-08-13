@@ -46,7 +46,7 @@ func (pgdb *PostgresDB) Close() {
 }
 
 func runMigrations(dsn string, migratePath string) error {
-	m, err := migrate.New(fmt.Sprintf("file://%s", "migrations"), dsn)
+	m, err := migrate.New(fmt.Sprintf("file://%s", migratePath), dsn)
 	if err != nil {
 		return err
 	}
