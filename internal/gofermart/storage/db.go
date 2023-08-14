@@ -19,6 +19,7 @@ type PostgresDB struct {
 	pool *pgxpool.Pool
 }
 
+// инизиацлизация бд
 func InitDB(configDB string, migratePath string) (*PostgresDB, error) {
 	err := runMigrations(configDB, migratePath)
 	if err != nil {
@@ -41,12 +42,14 @@ func InitDB(configDB string, migratePath string) (*PostgresDB, error) {
 	return nil, fmt.Errorf("failed to create a connection pool: %w", err)
 }
 
+// функция чтобы закрыть соедининение
 func (pgdb *PostgresDB) Close() {
 	pgdb.pool.Close()
 }
 
+// накатываем миграции
 func runMigrations(dsn string, migratePath string) error {
-	m, err := migrate.New(fmt.Sprintf("file://%s", migratePath), dsn)
+	m, err := migrate.New(fmt.Sprintf("file://%s", "migrations"), dsn)
 	if err != nil {
 		return err
 	}
@@ -54,11 +57,6 @@ func runMigrations(dsn string, migratePath string) error {
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
-
-	return nil
-}
-
-func (pgdb *PostgresDB) registerUser(ctx context.Context, login, password string) error {
 
 	return nil
 }

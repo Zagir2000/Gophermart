@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/MlDenis/internal/gofermart/auth/cache"
 	"github.com/MlDenis/internal/gofermart/handlers"
 	"github.com/MlDenis/internal/gofermart/storage"
 )
@@ -29,8 +30,8 @@ func run(flagStruct *FlagVar) error {
 	if postgresDB != nil {
 		defer postgresDB.Close()
 	}
-
-	newHandStruct := handlers.MetricHandlerNew(memStorageInterface, postgresDB)
+	JWTForSession := cache.NewDataJWT()
+	newHandStruct := handlers.HandlerNew(memStorageInterface, postgresDB, JWTForSession)
 	router := handlers.Router(ctx, newHandStruct)
 	log.Println("Running server on", flagStruct.runAddr)
 	return http.ListenAndServe(flagStruct.runAddr, router)

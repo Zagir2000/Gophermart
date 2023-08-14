@@ -3,14 +3,16 @@ package storage
 import (
 	"context"
 
+	"github.com/MlDenis/internal/gofermart/models"
 	log "github.com/sirupsen/logrus"
 )
 
-type Repository interface {
-	registerUser(ctx context.Context, login, password string) error
+type DBInterface interface {
+	RegisterUser(ctx context.Context, userData models.UserData) error
+	GetUser(ctx context.Context, userData *models.UserData) error
 }
 
-func NewStorage(ctx context.Context, migratePath string, postgresDSN string) (Repository, *PostgresDB, error) {
+func NewStorage(ctx context.Context, migratePath string, postgresDSN string) (DBInterface, *PostgresDB, error) {
 
 	DB, err := InitDB(postgresDSN, migratePath)
 	if err != nil {

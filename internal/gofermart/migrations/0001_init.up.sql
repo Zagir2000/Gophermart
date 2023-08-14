@@ -5,13 +5,13 @@ BEGIN
    
     CREATE TABLE IF NOT EXISTS users (
             id INT GENERATED ALWAYS AS IDENTITY,
-            ulogin TEXT NOT NULL,
-            upass TEXT NOT NULL,
+            userlogin TEXT NOT NULL,
+            hashpass TEXT NOT NULL,
             PRIMARY KEY(id),
-            UNIQUE(ulogin, upass)
+            UNIQUE(userlogin, hashpass)
     );
 
-    CREATE INDEX IF NOT EXISTS ulogin_id ON users USING hash(ulogin);
+    CREATE INDEX IF NOT EXISTS userlogin_id ON users USING hash(userlogin);
 END $$;
 --
 --
