@@ -25,7 +25,7 @@ func (m *HandlerDB) RegisterNewUser(ctx context.Context) http.HandlerFunc {
 		}
 		// десериализуем запрос в структуру модели
 		log.Debug("decoding request")
-		var jsonUsers models.UserData
+		jsonUsers := models.UserData{}
 		dec := json.NewDecoder(req.Body)
 		if err := dec.Decode(&jsonUsers); err != nil {
 			log.Debug("cannot decode request JSON body", err)
@@ -44,7 +44,7 @@ func (m *HandlerDB) RegisterNewUser(ctx context.Context) http.HandlerFunc {
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		err = auth.CreateJwtToken(&jsonUsers)
+		jsonUsers.Token, err = auth.CreateJwtToken(jsonUsers.Login)
 		if err != nil {
 			log.Debug("token not created")
 			res.WriteHeader(http.StatusBadRequest)
@@ -73,7 +73,7 @@ func (m *HandlerDB) AuthorizationUser(ctx context.Context) http.HandlerFunc {
 		}
 		// десериализуем запрос в структуру модели
 		log.Debug("decoding request")
-		var jsonUsers models.UserData
+		jsonUsers := &models.UserData{}
 		dec := json.NewDecoder(req.Body)
 		if err := dec.Decode(&jsonUsers); err != nil {
 			log.Debug("cannot decode request JSON body", err)
@@ -82,19 +82,19 @@ func (m *HandlerDB) AuthorizationUser(ctx context.Context) http.HandlerFunc {
 		}
 
 		jsonUsers.PasswordHash = auth.HashPassword(jsonUsers.Password)
-		err := m.Storage.GetUser(ctx, &jsonUsers)
+		err := m.Storage.GetUser(ctx, jsonUsers)
 		if err != nil {
 			log.Debug("failed to autorization", err)
 			res.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		err = auth.CreateJwtToken(&jsonUsers)
+		jsonUsers.Token, err = auth.CreateJwtToken(jsonUsers.Login)
 		if err != nil {
 			log.Debug("token not created")
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		m.DataJWT.AddToken(&jsonUsers)
+		m.DataJWT.AddToken(jsonUsers)
 		res.Header().Add(models.HeaderHTTP, jsonUsers.Token)
 		res.WriteHeader(http.StatusOK)
 

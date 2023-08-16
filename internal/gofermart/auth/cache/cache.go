@@ -4,18 +4,18 @@ import (
 	"sync"
 
 	"github.com/MlDenis/internal/gofermart/models"
-	"github.com/MlDenis/internal/gofermart/pkg"
+	"github.com/MlDenis/pkg"
 )
 
 // структура где будут хранится токены в оперативной памяти
 type DataJWT struct {
-	data map[string]int64
+	data map[string]string
 	mu   sync.RWMutex
 }
 
 func NewDataJWT() *DataJWT {
 	return &DataJWT{
-		data: map[string]int64{},
+		data: map[string]string{},
 	}
 }
 
@@ -23,15 +23,16 @@ func NewDataJWT() *DataJWT {
 func (userJWT *DataJWT) AddToken(userData *models.UserData) {
 	userJWT.mu.Lock()
 	defer userJWT.mu.Unlock()
-	userJWT.data[userData.Token] = userData.UserId
+	userJWT.data[userData.Token] = userData.Login
 
 }
 
 // получаем токен(для проверки авторизации)
 func (userJWT *DataJWT) GetToken(userData *models.UserData) error {
-	_, ok := userJWT.data[userData.Token]
+	login, ok := userJWT.data[userData.Token]
 	if !ok {
 		return pkg.TokenNotExist
 	}
+	userData.Login = login
 	return nil
 }

@@ -3,7 +3,6 @@ package auth
 import (
 	"time"
 
-	"github.com/MlDenis/internal/gofermart/models"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -17,19 +16,18 @@ type Claims struct {
 }
 
 // создаем токен
-func CreateJwtToken(userData *models.UserData) error {
+func CreateJwtToken(loginUser string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			// когда создан токен
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
 		},
 		// собственное утверждение
-		Username: userData.Login,
+		Username: loginUser,
 	})
 	tokenString, err := token.SignedString([]byte(SECRET_KEY))
 	if err != nil {
-		return err
+		return "", err
 	}
-	userData.Token = tokenString
-	return nil
+	return tokenString, err
 }

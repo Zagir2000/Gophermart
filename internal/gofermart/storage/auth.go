@@ -36,6 +36,5 @@ func (pgdb *PostgresDB) GetUser(ctx context.Context, userData *models.UserData) 
 		log.Error(err)
 		return err
 	}
-	userData.UserId = userId
 	return err
 }
