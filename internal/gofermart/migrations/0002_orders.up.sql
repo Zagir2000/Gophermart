@@ -5,9 +5,12 @@ BEGIN
        
     CREATE TABLE IF NOT EXISTS orders (
             id INT GENERATED ALWAYS AS IDENTITY,
-            ordernumber TEXT NOT NULL,
+            ordernumber BIGINT NOT NULL,
             userlogin TEXT NOT NULL,
             orderdate DATE NOT NULL,  
+            statusorder TEXT NOT NULL,
+            accrual BIGINT,
+            withdraw BIGINT,
             PRIMARY KEY(id),
             UNIQUE(ordernumber, userlogin)
     );

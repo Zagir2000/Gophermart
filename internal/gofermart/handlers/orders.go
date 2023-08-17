@@ -44,14 +44,14 @@ func (m *HandlerDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
 			res.WriteHeader(http.StatusBadRequest)
 		}
 
-		orderID, err := strconv.Atoi(string(number))
+		orderID, err := strconv.ParseInt(string(number), 10, 64)
 		validNumber := luna.Valid(orderID)
 		if validNumber == false {
 			log.Debug("invalid order number")
 			res.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
-
+		jsonOrders.OrderNumber = orderID
 		jsonOrders.UserLogin = jsonUsers.Login
 		err = m.pgDB.LoadOrderInDB(ctx, jsonOrders)
 		if err != nil {

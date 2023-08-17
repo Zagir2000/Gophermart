@@ -13,7 +13,17 @@ type UserData struct {
 }
 
 type Orders struct {
-	OrderNumber string    `json:"order_number"` // имя метрики
+	OrderNumber int64     `json:"order_number"` // имя метрики
 	UserLogin   string    `json:"user_login"`   // параметр, принимающий значение gauge или counter
 	OrderDate   time.Time `json:"order_date"`
+	StatusOrder string    `json:"status_order"`
+	Accrual     int64     `json:"accrual"`
+	Withdraw    int64     `json:"withdraw"`
 }
+
+const (
+	NewOrder        = "New"
+	ProcessingOrder = "PROCESSING"
+	InvalidOrder    = "INVALID"
+	ProcessedOrder  = "PROCESSED"
+)

@@ -30,7 +30,7 @@ func (pgdb *PostgresDB) RegisterUser(ctx context.Context, userData models.UserDa
 // проверям есть ли пользователь в бд
 func (pgdb *PostgresDB) GetUser(ctx context.Context, userData *models.UserData) error {
 	var userId int64
-	row := pgdb.pool.QueryRow(ctx, "SELECT id FROM public.users WHERE userlogin=$1 AND hashpass=$2", userData.Login, userData.PasswordHash)
+	row := pgdb.pool.QueryRow(ctx, "SELECT id FROM public.users WHERE userlogin=$1", userData.Login)
 	err := row.Scan(&userId)
 	if err != nil {
 		log.Error(err)
