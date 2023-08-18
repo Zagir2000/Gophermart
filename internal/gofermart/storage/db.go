@@ -31,7 +31,7 @@ func InitDB(configDB string, migratePath string) (*PostgresDB, error) {
 	}
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgerrcode.IsConnectionException(pgErr.Code) {
-		log.Error("Database initialization error: ", err)
+		log.Error("Database initialization error", err)
 		pool, err := pgxpool.New(context.Background(), configDB)
 		if err == nil {
 			log.Info("Successful database connection")
