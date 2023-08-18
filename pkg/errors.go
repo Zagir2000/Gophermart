@@ -7,5 +7,5 @@ func (e Error) Error() string { return string(e) }
 
 const TokenNotExist = Error("Token does not exist")
 const UniqueViolationCode = "23505"
-const uniqueViolation = Error(`ERROR: duplicate key value violates unique constraint "urls_original_url_idx" (SQLSTATE 23505)`) // тут нужно вставить реальную ошибку
+const uniqueViolationOrders = Error(`ERROR: duplicate key value violates unique constraint "orders_ordernumber_userlogin_key (SQLSTATE 23505)`) 
 const NoOrders = Error("User doesn't have any orders")
