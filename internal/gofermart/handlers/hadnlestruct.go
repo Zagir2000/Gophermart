@@ -8,14 +8,12 @@ import (
 // структура для наших хэндлеров, далее надо будет добавить возмонжо логер и тд
 type HandlerDB struct {
 	Storage storage.DBInterface
-	pgDB    *storage.PostgresDB
 	DataJWT *cache.DataJWT
 }
 
-func HandlerNew(s storage.DBInterface, pgDB *storage.PostgresDB, DataJWT *cache.DataJWT) *HandlerDB {
+func HandlerNew(s storage.DBInterface, DataJWT *cache.DataJWT) *HandlerDB {
 	return &HandlerDB{
 		Storage: s,
-		pgDB:    pgDB,
 		DataJWT: DataJWT,
 	}
 }

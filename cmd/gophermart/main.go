@@ -31,7 +31,7 @@ func run(flagStruct *FlagVar) error {
 		defer postgresDB.Close()
 	}
 	JWTForSession := cache.NewDataJWT()
-	newHandStruct := handlers.HandlerNew(memStorageInterface, postgresDB, JWTForSession)
+	newHandStruct := handlers.HandlerNew(memStorageInterface, JWTForSession)
 	router := handlers.Router(ctx, newHandStruct)
 	log.Println("Running server on: ", flagStruct.runAddr)
 	return http.ListenAndServe(flagStruct.runAddr, router)

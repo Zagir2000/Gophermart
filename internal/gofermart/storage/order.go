@@ -9,16 +9,28 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// записываем данные нового пользователя в бд
+// записываем заказы пользователя
 func (pgdb *PostgresDB) LoadOrderInDB(ctx context.Context, orders *models.Orders) error {
-	orders.OrderDate = time.Now()
-	orders.StatusOrder = models.NewOrder
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
-
+	orders.OrderDate = time.Now()
+	//Проверяем, если это заказ на списание, то добавляем статус models.WithdrawEnd, а если заказ новый, который ждет начисление, то models.NewOrder
+	if orders.StatusOrder == models.WithdrawEnd {
+		_, err = tx.Exec(ctx,
+			`INSERT INTO public.orders (ordernumber,userlogin,orderdate,statusorder,withdraw) VALUES ($1, $2,$3, $4, $5)`,
+			orders.OrderNumber, orders.UserLogin, orders.OrderDate, orders.StatusOrder, orders.Withdraw,
+		)
+		if err != nil {
+			log.Error(err)
+			tx.Rollback(ctx)
+			return err
+		}
+		return tx.Commit(ctx)
+	}
+	orders.StatusOrder = models.NewOrder
 	_, err = tx.Exec(ctx,
 		`INSERT INTO public.orders (ordernumber,userlogin,orderdate,statusorder) VALUES ($1, $2,$3, $4)`,
 		orders.OrderNumber, orders.UserLogin, orders.OrderDate, orders.StatusOrder,
