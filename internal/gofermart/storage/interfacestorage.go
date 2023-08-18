@@ -11,6 +11,7 @@ type DBInterface interface {
 	RegisterUser(ctx context.Context, userData models.UserData) error
 	GetUser(ctx context.Context, userData *models.UserData) error
 	LoadOrderInDB(ctx context.Context, userData *models.Orders) error
+	GetUserOrders(ctx context.Context, user *models.UserData) ([]models.Orders, error)
 }
 
 func NewStorage(ctx context.Context, migratePath string, postgresDSN string) (DBInterface, *PostgresDB, error) {
