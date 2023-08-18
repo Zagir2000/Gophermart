@@ -86,7 +86,7 @@ func (m *HandlerDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 
 		err := m.DataJWT.GetToken(userData)
 		if err != nil {
-			log.Debug("user not authenticated: ", err)
+			log.Error("user not authenticated: ", err)
 			res.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -97,21 +97,23 @@ func (m *HandlerDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 				res.WriteHeader(http.StatusNoContent)
 				return
 			}
-			log.Debug("cannot get user's orders: ", err)
+			log.Error("cannot get user's orders: ", err)
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		ordersJson, err := json.Marshal(orders)
-		if err != nil {			
-			log.Debug("cannot make json orders: ", err)
+		if err != nil {
+			log.Error("cannot make json orders: ", err)
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
+		res.Header().Set("Content-type", "application/json")
+
 		_, err = res.Write(ordersJson)
 		if err != nil {
-			log.Debug("cannot orders json: ", err)
+			log.Error("cannot orders json: ", err)
 			return
 		}
 	}
