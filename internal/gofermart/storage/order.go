@@ -6,6 +6,7 @@ import (
 
 	"github.com/MlDenis/internal/gofermart/models"
 	log "github.com/sirupsen/logrus"
+	"github.com/MlDenis/pkg"
 )
 
 // записываем данные нового пользователя в бд
@@ -30,4 +31,26 @@ func (pgdb *PostgresDB) LoadOrderInDB(ctx context.Context, orders *models.Orders
 
 	return tx.Commit(ctx)
 
+}
+
+func (pgdb *PostgresDB) GetUserOrders(ctx context.Context, user *models.UserData) ([]models.Orders, error) {
+	orders := []models.Orders{}
+	rows, err := pgdb.pool.Query(ctx, `SELECT * FROM orders WHERE userlogin = $1`, user.Login)
+	if err != nil {
+		return orders, err
+	}
+
+	for rows.Next() {
+		order := models.Orders{}
+		rows.Scan(&order)
+		orders = append(orders, order)
+	}
+
+	defer rows.Close()
+
+	if len(orders) == 0 {
+		return orders, pkg.NoOrders
+	}
+
+	return orders, nil
 }
