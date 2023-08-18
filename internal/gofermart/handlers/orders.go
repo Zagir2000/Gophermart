@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -75,4 +76,43 @@ func (m *HandlerDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
 		return
 	}
 
+}
+
+func (m *HandlerDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+
+		userData := &models.UserData{}
+		userData.Token = req.Header.Get(models.HeaderHTTP)
+
+		err := m.DataJWT.GetToken(userData)
+		if err != nil {
+			log.Debug("user not authenticated: ", err)
+			res.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		orders, err := m.Storage.GetUserOrders(ctx, userData)
+		if err != nil {
+			if errors.Is(err, pkg.NoOrders) {
+				res.WriteHeader(http.StatusNoContent)
+				return
+			}
+			log.Debug("cannot get user's orders: ", err)
+			res.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		ordersJson, err := json.Marshal(orders)
+		if err != nil {			
+			log.Debug("cannot make json orders: ", err)
+			res.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		_, err = res.Write(ordersJson)
+		if err != nil {
+			log.Debug("cannot orders json: ", err)
+			return
+		}
+	}
 }
