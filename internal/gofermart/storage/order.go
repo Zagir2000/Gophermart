@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/MlDenis/internal/gofermart/models"
-	log "github.com/sirupsen/logrus"
 	"github.com/MlDenis/pkg"
+	log "github.com/sirupsen/logrus"
 )
 
 // записываем данные нового пользователя в бд
@@ -35,14 +35,18 @@ func (pgdb *PostgresDB) LoadOrderInDB(ctx context.Context, orders *models.Orders
 
 func (pgdb *PostgresDB) GetUserOrders(ctx context.Context, user *models.UserData) ([]models.Orders, error) {
 	orders := []models.Orders{}
-	rows, err := pgdb.pool.Query(ctx, `SELECT * FROM orders WHERE userlogin = $1`, user.Login)
+	rows, err := pgdb.pool.Query(ctx, `SELECT ordernumber, orderdate, statusorder FROM public.orders WHERE userlogin = $1`, user.Login) // дописать accrual, withdraw когда сделаем систему
 	if err != nil {
 		return orders, err
 	}
 
 	for rows.Next() {
 		order := models.Orders{}
-		rows.Scan(&order)
+		order.UserLogin = user.Login
+		err := rows.Scan(&order.OrderNumber, &order.OrderDate, &order.StatusOrder)
+		if err != nil {
+			return orders, err
+		}
 		orders = append(orders, order)
 	}
 
