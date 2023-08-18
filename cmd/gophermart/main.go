@@ -25,7 +25,7 @@ func run(flagStruct *FlagVar) error {
 	ctx := context.Background()
 	memStorageInterface, postgresDB, err := storage.NewStorage(ctx, flagStruct.migrationsDir, flagStruct.databaseURI)
 	if err != nil {
-		log.Fatal("Error in create storage", err)
+		log.Fatal("Error in create storage: ", err)
 	}
 	if postgresDB != nil {
 		defer postgresDB.Close()
@@ -33,6 +33,6 @@ func run(flagStruct *FlagVar) error {
 	JWTForSession := cache.NewDataJWT()
 	newHandStruct := handlers.HandlerNew(memStorageInterface, postgresDB, JWTForSession)
 	router := handlers.Router(ctx, newHandStruct)
-	log.Println("Running server on", flagStruct.runAddr)
+	log.Println("Running server on: ", flagStruct.runAddr)
 	return http.ListenAndServe(flagStruct.runAddr, router)
 }
