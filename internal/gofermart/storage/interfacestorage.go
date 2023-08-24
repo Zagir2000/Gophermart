@@ -15,6 +15,7 @@ type DBInterface interface {
 	GetBalanceDB(ctx context.Context, userlogin string) (*models.ResponseBalance, error)
 	AuthorizationBalance(ctx context.Context, userlogin string) error
 	EditBalanceWithdraw(ctx context.Context, userlogin string, sumwithdraw int64) error
+	GetWithdrawalsDB(ctx context.Context, login string) ([]models.WithdrawOrder, error)
 }
 
 func NewStorage(ctx context.Context, migratePath string, postgresDSN string) (DBInterface, *PostgresDB, error) {

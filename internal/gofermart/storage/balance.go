@@ -14,20 +14,15 @@ func (pgdb *PostgresDB) GetBalanceDB(ctx context.Context, userlogin string) (*mo
 		log.Error(err)
 		return nil, err
 	}
-	var (
-		AccrualSum  int64
-		WithdrawSum int64
-	)
+
 	ResponseBalance := &models.ResponseBalance{}
 	row := pgdb.pool.QueryRow(ctx, `SELECT sumaccrual,sumwithdraw FROM public.balance WHERE userlogin=$1`, userlogin)
-	err = row.Scan(&AccrualSum, &WithdrawSum)
+	err = row.Scan(&ResponseBalance.AccrualSum, &ResponseBalance.WithdrawSum)
 	if err != nil {
 		log.Error(err)
 		tx.Rollback(ctx)
 		return nil, err
 	}
-	ResponseBalance.AccrualSum = AccrualSum
-	ResponseBalance.WithdrawSum = WithdrawSum
 
 	return ResponseBalance, tx.Commit(ctx)
 }

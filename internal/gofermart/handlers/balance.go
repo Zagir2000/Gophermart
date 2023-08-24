@@ -132,13 +132,54 @@ func (m *HandlerDB) WithdrawBalance(ctx context.Context) http.HandlerFunc {
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(ResponseBalance)
+
+		res.WriteHeader(http.StatusOK)
+		return
+	}
+}
+
+// Получение информации о выводе средств
+func (m *HandlerDB) GetWithdrawals(ctx context.Context) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			log.Error("got request with bad method", req.Method)
+			res.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		userData := &models.UserData{}
+		userData.Token = req.Header.Get(models.HeaderHTTP)
+
+		err := m.DataJWT.GetToken(userData)
 		if err != nil {
-			log.Error("cannot make json balance: ", err)
+			log.Error("user not authenticated: ", err)
+			res.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		withdrawals, err := m.Storage.GetWithdrawalsDB(ctx, userData.Login)
+		if err != nil {
+			if errors.Is(err, pkg.NoOrders) {
+				res.WriteHeader(http.StatusNoContent)
+				return
+			}
+			log.Error("cannot get user's withdrawals balance: ", err)
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		res.Write(response)
+
+		withdrawalsJson, err := json.Marshal(withdrawals)
+		if err != nil {
+			log.Error("cannot make json withdrawals balance: ", err)
+			res.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		res.Header().Set("Content-type", "application/json")
+
+		_, err = res.Write(withdrawalsJson)
+		if err != nil {
+			log.Error("cannot orders json: ", err)
+			return
+		}
 		res.WriteHeader(http.StatusOK)
 		return
 	}

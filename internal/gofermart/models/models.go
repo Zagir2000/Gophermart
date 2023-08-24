@@ -35,10 +35,11 @@ type ResponseBalance struct {
 	WithdrawSum int64 `json:"withdraw_sum"`
 }
 
-// Структура баланса пдя ответа на запрос GetBalance
+// Структура баланса для ответа на запрос на списание средств
 type WithdrawOrder struct {
-	Order int64 `json:"order"`
-	Sum   int64 `json:"sum"`
+	Order       int64     `json:"order"`
+	Sum         int64     `json:"sum"`
+	ProcessedAt time.Time `json:"processed_at,omitempty"`
 }
 
 const (

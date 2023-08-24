@@ -86,7 +86,12 @@ func (m *HandlerDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
 
 func (m *HandlerDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-
+		if req.Method != http.MethodGet {
+			log.Error("got request with bad method", req.Method)
+			res.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		//Проверяем токен
 		userData := &models.UserData{}
 		userData.Token = req.Header.Get(models.HeaderHTTP)
 

@@ -70,3 +70,29 @@ func (pgdb *PostgresDB) GetUserOrders(ctx context.Context, user *models.UserData
 
 	return orders, nil
 }
+
+// Получение информации о выводе средств из бд
+func (pgdb *PostgresDB) GetWithdrawalsDB(ctx context.Context, login string) ([]models.WithdrawOrder, error) {
+	withdrawals := []models.WithdrawOrder{}
+	rows, err := pgdb.pool.Query(ctx, `SELECT ordernumber, withdraw, orderdate FROM public.orders WHERE userlogin = $1 and statusorder=$2`, login, models.WithdrawEnd) // дописать accrual, withdraw когда сделаем систему
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		withdraw := models.WithdrawOrder{}
+		err := rows.Scan(&withdraw.Order, &withdraw.Sum, &withdraw.ProcessedAt)
+		if err != nil {
+			return nil, err
+		}
+		withdrawals = append(withdrawals, withdraw)
+	}
+
+	defer rows.Close()
+
+	if len(withdrawals) == 0 {
+		return nil, pkg.NoOrders
+	}
+
+	return withdrawals, nil
+}

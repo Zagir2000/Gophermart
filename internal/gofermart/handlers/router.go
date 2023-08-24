@@ -14,5 +14,6 @@ func Router(ctx context.Context, newHandStruct *HandlerDB) chi.Router {
 	r.Get("/api/user/orders", newHandStruct.GetUserOrder(ctx))
 	r.Get("/api/user/balance", newHandStruct.GetBalance(ctx))
 	r.Post("/api/user/balance/withdraw", newHandStruct.WithdrawBalance(ctx))
+	r.Get("/api/user/withdrawals", newHandStruct.GetWithdrawals(ctx))
 	return r
 }
