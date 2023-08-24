@@ -12,7 +12,9 @@ require (
 )
 
 require (
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/go-chi/chi v1.5.4 // indirect
+	github.com/go-chi/httprate v0.7.4 // indirect
 	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
