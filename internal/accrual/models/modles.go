@@ -19,13 +19,13 @@ type Goods struct {
 }
 
 type Reward struct {
-	Match      int64  `json:"match"`
-	Reward     string `json:"reward"`
-	RewardType int64  `json:"reward_type"`
+	Match      string `json:"match"`
+	Reward     int64  `json:"reward"`
+	RewardType string `json:"reward_type"`
 }
 
 const (
-	Registered      = "REGISTERED"
+	RegisteredOrder = "REGISTERED"
 	ProcessingOrder = "PROCESSING"
 	InvalidOrder    = "INVALID"
 	ProcessedOrder  = "PROCESSED"

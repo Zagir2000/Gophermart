@@ -37,7 +37,7 @@ func (pgdb *PostgresDB) LoadOrderInOrdersAccrualDB(ctx context.Context, orderFor
 
 	_, err = tx.Exec(ctx,
 		`INSERT INTO public.ordersaccrual (ordernumber,statusorder,accrual,goods) VALUES ($1, $2, $3, $4)`,
-		orderForRegister.OrderNumber, models.Registered, 0, orderForRegister.Goods,
+		orderForRegister.OrderNumber, models.RegisteredOrder, 0, orderForRegister.Goods,
 	)
 	if err != nil {
 		log.Error(err)

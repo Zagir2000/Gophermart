@@ -30,6 +30,12 @@ func (m *HandlerDB) RegisterInfoReward(ctx context.Context) http.HandlerFunc {
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		err := m.Storage.RegisterInfoInDB(ctx, jsonGoods)
+		if err != nil {
+			log.Error("error in add info for goods in db", err)
+			res.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
 		res.WriteHeader(http.StatusAccepted)
 		return
