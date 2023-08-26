@@ -9,6 +9,7 @@ type FlagVar struct {
 	runAddr       string
 	databaseURI   string
 	migrationsDir string
+	rateLimit     int
 }
 
 func NewFlagVarStruct() *FlagVar {
@@ -19,8 +20,9 @@ func (f *FlagVar) parseFlags() error {
 	// как аргумент -a со значением :8080 по умолчанию
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.StringVar(&f.runAddr, "a", "localhost:8081", "address and port to run server")
-	flag.StringVar(&f.databaseURI, "d", "postgres://postgres:123456@localhost/gofermart?sslmode=disable", "database connection address")
+	flag.StringVar(&f.databaseURI, "d", "", "database connection address")
 	flag.StringVar(&f.migrationsDir, "m", "migrations", "migrations to db")
+	flag.IntVar(&f.rateLimit, "l", 1, "number of source related materials on the server")
 	flag.Parse()
 
 	if envRunAddr, ok := os.LookupEnv("RUN_ADDRESS"); ok {
@@ -34,5 +36,6 @@ func (f *FlagVar) parseFlags() error {
 	if envMigrationsDir, ok := os.LookupEnv("MIGRATIONS_DIR"); ok {
 		f.migrationsDir = envMigrationsDir
 	}
+
 	return nil
 }
