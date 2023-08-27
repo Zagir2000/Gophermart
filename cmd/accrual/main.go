@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/MlDenis/internal/accrual/accrualcalculate"
 	"github.com/MlDenis/internal/accrual/handlers"
 	"github.com/MlDenis/internal/accrual/storage"
 )
@@ -30,6 +31,8 @@ func run(flagStruct *FlagVar) error {
 		defer postgresDB.Close()
 	}
 	newHandStruct := handlers.HandlerNew(memStorageInterface)
+
+	go accrualcalculate.WorkerPool(ctx, memStorageInterface, flagStruct.rateLimit)
 	router := handlers.Router(ctx, newHandStruct)
 	log.Println("Running server on: ", flagStruct.runAddr)
 	return http.ListenAndServe(flagStruct.runAddr, router)

@@ -3,9 +3,12 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/MlDenis/internal/accrual/models"
+	"github.com/MlDenis/pkg"
+	"github.com/jackc/pgx/v5/pgconn"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -32,8 +35,16 @@ func (m *HandlerDB) RegisterInfoReward(ctx context.Context) http.HandlerFunc {
 		}
 		err := m.Storage.RegisterInfoInDB(ctx, jsonGoods)
 		if err != nil {
-			log.Error("error in add info for goods in db", err)
-			res.WriteHeader(http.StatusBadRequest)
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pkg.UniqueViolationCode {
+					log.Error("the order number has already been uploaded by the user")
+					res.WriteHeader(http.StatusConflict)
+					return
+				}
+			}
+			log.Error("error in add in db: ", err)
+			res.WriteHeader(http.StatusConflict)
 			return
 		}
 

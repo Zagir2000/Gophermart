@@ -51,14 +51,10 @@ func (m *HandlerDB) RegisterNewOrder(ctx context.Context) http.HandlerFunc {
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		err = m.Storage.AddGoods(ctx, jsonOrder)
-		if err != nil {
-			log.Error("error in add goods in db", err)
-			res.WriteHeader(http.StatusBadRequest)
-		}
 		res.WriteHeader(http.StatusAccepted)
 		return
 	}
+
 }
 
 // Получаем accraul заказа и его статус

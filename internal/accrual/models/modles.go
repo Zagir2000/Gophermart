@@ -10,14 +10,19 @@ type Order struct {
 
 type OrderForRegister struct {
 	OrderNumber int64   `json:"order_number"`
+	StatusOrder string  `json:"status_order"`
 	Goods       []Goods `json:"goods"`
 }
 
 type Goods struct {
-	Description string `json:"description,omitempty"`
-	Price       int64  `json:"price,omitempty"`
+	Description string `json:"description"`
+	Price       int64  `json:"price"`
 }
 
+type GoodsWithReward struct {
+	Reward []Reward
+	OrderForRegister
+}
 type Reward struct {
 	Match      string `json:"match"`
 	Reward     int64  `json:"reward"`
@@ -34,4 +39,9 @@ const (
 const (
 	RateLimit = 100
 	TimeLimit = 1 * time.Minute
+)
+
+const (
+	RewardDefault     = 10
+	RewardTypeDefault = "%"
 )

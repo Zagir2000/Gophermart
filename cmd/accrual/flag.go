@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"strconv"
 )
 
 type FlagVar struct {
@@ -22,7 +23,7 @@ func (f *FlagVar) parseFlags() error {
 	flag.StringVar(&f.runAddr, "a", "localhost:8081", "address and port to run server")
 	flag.StringVar(&f.databaseURI, "d", "", "database connection address")
 	flag.StringVar(&f.migrationsDir, "m", "migrations", "migrations to db")
-	flag.IntVar(&f.rateLimit, "l", 1, "number of source related materials on the server")
+	flag.IntVar(&f.rateLimit, "l", 10, "number of source related materials on the server")
 	flag.Parse()
 
 	if envRunAddr, ok := os.LookupEnv("RUN_ADDRESS"); ok {
@@ -37,5 +38,12 @@ func (f *FlagVar) parseFlags() error {
 		f.migrationsDir = envMigrationsDir
 	}
 
+	if envRateLimit, ok := os.LookupEnv("RATE_LIMIT"); ok {
+		envRateLimitInt, err := strconv.Atoi(envRateLimit)
+		if err != nil {
+			return err
+		}
+		f.rateLimit = envRateLimitInt
+	}
 	return nil
 }

@@ -46,3 +46,52 @@ func (pgdb *PostgresDB) LoadOrderInOrdersAccrualDB(ctx context.Context, orderFor
 	}
 	return tx.Commit(ctx)
 }
+
+// добавление aacrual
+func (pgdb *PostgresDB) LoadAccrualStatusOrder(ctx context.Context, status string, ordernumber int64, accraul int64) error {
+	tx, err := pgdb.pool.Begin(ctx)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	_, err = tx.Exec(ctx,
+		`UPDATE public.ordersaccrual set accrual = $1, statusorder = $2 WHERE ordernumber=$3`,
+		accraul, status, ordernumber,
+	)
+	if err != nil {
+		log.Error(err)
+		tx.Rollback(ctx)
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+// получаем товары
+func (pgdb *PostgresDB) GetAllOrdersAndGoods(ctx context.Context) ([]models.OrderForRegister, error) {
+	tx, err := pgdb.pool.Begin(ctx)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	ordersGoods := []models.OrderForRegister{}
+	rows, err := pgdb.pool.Query(ctx,
+		`SELECT ordernumber,statusorder,goods FROM public.ordersaccrual`,
+	)
+	for rows.Next() {
+		orderGoods := models.OrderForRegister{}
+		err = rows.Scan(&orderGoods.OrderNumber, &orderGoods.StatusOrder, &orderGoods.Goods)
+		if err != nil {
+			log.Error(err)
+			tx.Rollback(ctx)
+			return nil, err
+		}
+		ordersGoods = append(ordersGoods, orderGoods)
+	}
+	if err != nil {
+		log.Error(err)
+		tx.Rollback(ctx)
+		return nil, err
+	}
+	return ordersGoods, tx.Commit(ctx)
+}
