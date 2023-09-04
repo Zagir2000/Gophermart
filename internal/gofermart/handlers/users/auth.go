@@ -1,4 +1,4 @@
-package handlers
+package users
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 // регистрируем нового пользователя
-func (m *HandlerDB) RegisterNewUser(ctx context.Context) http.HandlerFunc {
+func (m *HandlerUserDB) RegisterNewUser(ctx context.Context) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			log.Error("got request with bad method", req.Method)
@@ -34,9 +34,9 @@ func (m *HandlerDB) RegisterNewUser(ctx context.Context) http.HandlerFunc {
 			return
 		}
 		jsonUsers.PasswordHash = auth.HashPassword(jsonUsers.Password)
-		err := m.Storage.RegisterUser(ctx, jsonUsers)
+		err := m.StorageUsers.RegisterUser(ctx, jsonUsers)
 		if err != nil {
-			err := m.Storage.GetUser(ctx, &jsonUsers)
+			err := m.StorageUsers.GetUser(ctx, &jsonUsers)
 			if err == nil {
 				log.Error("login busy")
 				res.WriteHeader(http.StatusConflict)
@@ -46,7 +46,7 @@ func (m *HandlerDB) RegisterNewUser(ctx context.Context) http.HandlerFunc {
 			return
 		}
 		//При регистрации создадим баланс для пользователя = 0
-		err = m.Storage.AuthorizationBalance(ctx, jsonUsers.Login)
+		err = m.StorageUsers.AuthorizationBalance(ctx, jsonUsers.Login)
 		if err != nil {
 			log.Error("failed to register user", err)
 			res.WriteHeader(http.StatusBadRequest)
@@ -68,7 +68,7 @@ func (m *HandlerDB) RegisterNewUser(ctx context.Context) http.HandlerFunc {
 }
 
 // авторизация
-func (m *HandlerDB) AuthorizationUser(ctx context.Context) http.HandlerFunc {
+func (m *HandlerUserDB) AuthorizationUser(ctx context.Context) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			log.Error("got request with bad method", req.Method)
@@ -92,7 +92,7 @@ func (m *HandlerDB) AuthorizationUser(ctx context.Context) http.HandlerFunc {
 		}
 		//хэшируем пароль
 		jsonUsers.PasswordHash = auth.HashPassword(jsonUsers.Password)
-		err := m.Storage.GetUser(ctx, jsonUsers)
+		err := m.StorageUsers.GetUser(ctx, jsonUsers)
 		if err != nil {
 			log.Error("failed to autorization", err)
 			res.WriteHeader(http.StatusUnauthorized)

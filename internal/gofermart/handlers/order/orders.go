@@ -1,4 +1,4 @@
-package handlers
+package order
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 )
 
 // авторизация
-func (m *HandlerDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
+func (m *HandlerOrderseDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			log.Error("got request with bad method", req.Method)
@@ -60,7 +60,7 @@ func (m *HandlerDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
 		}
 		jsonOrders.OrderNumber = orderID
 		jsonOrders.UserLogin = jsonUsers.Login
-		err = m.Storage.LoadOrderInDB(ctx, jsonOrders)
+		err = m.StorageOrders.LoadOrderInDB(ctx, jsonOrders)
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
@@ -84,7 +84,7 @@ func (m *HandlerDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
 
 }
 
-func (m *HandlerDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
+func (m *HandlerOrderseDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			log.Error("got request with bad method", req.Method)
@@ -102,7 +102,7 @@ func (m *HandlerDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		orders, err := m.Storage.GetUserOrders(ctx, userData.Login)
+		orders, err := m.StorageOrders.GetUserOrders(ctx, userData.Login)
 		if err != nil {
 			if errors.Is(err, pkg.NoOrders) {
 				res.WriteHeader(http.StatusNoContent)

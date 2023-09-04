@@ -45,9 +45,9 @@ func (pgdb *PostgresDB) LoadOrderInDB(ctx context.Context, orders *models.Orders
 
 }
 
-func (pgdb *PostgresDB) GetUserOrders(ctx context.Context, login string) ([]models.OrdersOnly, error) {
+func (pgdb *PostgresDB) GetUserOrders(ctx context.Context, userlogin string) ([]models.OrdersOnly, error) {
 	orders := []models.OrdersOnly{}
-	rows, err := pgdb.pool.Query(ctx, `SELECT ordernumber, orderdate, statusorder FROM public.orders WHERE userlogin = $1`, login) // дописать accrual, withdraw когда сделаем систему
+	rows, err := pgdb.pool.Query(ctx, `SELECT ordernumber, orderdate, statusorder FROM public.orders WHERE userlogin = $1`, userlogin) // дописать accrual, withdraw когда сделаем систему
 	if err != nil {
 		return orders, err
 	}
@@ -71,9 +71,9 @@ func (pgdb *PostgresDB) GetUserOrders(ctx context.Context, login string) ([]mode
 }
 
 // Получение информации о выводе средств из бд
-func (pgdb *PostgresDB) GetWithdrawalsDB(ctx context.Context, login string) ([]models.WithdrawOrder, error) {
+func (pgdb *PostgresDB) GetWithdrawalsDB(ctx context.Context, userlogin string) ([]models.WithdrawOrder, error) {
 	withdrawals := []models.WithdrawOrder{}
-	rows, err := pgdb.pool.Query(ctx, `SELECT ordernumber, withdraw, orderdate FROM public.orders WHERE userlogin = $1 and statusorder=$2`, login, models.WithdrawEnd) // дописать accrual, withdraw когда сделаем систему
+	rows, err := pgdb.pool.Query(ctx, `SELECT ordernumber, withdraw, orderdate FROM public.orders WHERE userlogin = $1 and statusorder=$2`, userlogin, models.WithdrawEnd) // дописать accrual, withdraw когда сделаем систему
 	if err != nil {
 		return nil, err
 	}

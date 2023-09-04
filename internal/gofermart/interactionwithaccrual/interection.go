@@ -13,7 +13,7 @@ import (
 )
 
 // WorkerPool принимает канал данных, порождает 10 горутин
-func WorkerPool(ctx context.Context, s storage.DBInterface, rateLimit int, url string) {
+func WorkerPool(ctx context.Context, s storage.Interface, rateLimit int, url string) {
 	jobs := make(chan models.OrdersOnly, rateLimit)
 	// g := new(errgroup.Group)
 	for {
@@ -31,7 +31,7 @@ func WorkerPool(ctx context.Context, s storage.DBInterface, rateLimit int, url s
 
 }
 
-func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.OrdersOnly, s storage.DBInterface) {
+func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.OrdersOnly, s storage.Interface) {
 	rewards, err := s.GetAllOrders(ctx)
 	if err != nil {
 		log.Error("error in get rewards from db: ", err)
@@ -51,7 +51,7 @@ func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.OrdersOnly,
 
 }
 
-func GetAccrualAndStatus(ctx context.Context, ordersChan chan models.OrdersOnly, s storage.DBInterface, url string) {
+func GetAccrualAndStatus(ctx context.Context, ordersChan chan models.OrdersOnly, s storage.Interface, url string) {
 
 	order := <-ordersChan
 	if order.OrderNumber == 0 {

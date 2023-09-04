@@ -1,4 +1,4 @@
-package handlers
+package balance
 
 import (
 	"context"
@@ -14,7 +14,8 @@ import (
 )
 
 // баланс пользователя
-func (m *HandlerDB) GetBalance(ctx context.Context) http.HandlerFunc {
+func (m *HandlerBalanceDB) GetBalance(ctx context.Context) http.HandlerFunc {
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			log.Error("got request with bad method", req.Method)
@@ -30,7 +31,7 @@ func (m *HandlerDB) GetBalance(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		ResponseBalance, err := m.Storage.GetBalanceDB(ctx, jsonUsers.Login)
+		ResponseBalance, err := m.StorageBalance.GetBalanceDB(ctx, jsonUsers.Login)
 		if err != nil {
 			log.Error("error in add orders in db: ", err)
 			res.WriteHeader(http.StatusBadRequest)
@@ -50,7 +51,7 @@ func (m *HandlerDB) GetBalance(ctx context.Context) http.HandlerFunc {
 }
 
 // Запрос на списание средств
-func (m *HandlerDB) WithdrawBalance(ctx context.Context) http.HandlerFunc {
+func (m *HandlerBalanceDB) WithdrawBalance(ctx context.Context) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			log.Error("got request with bad method: ", req.Method)
@@ -88,7 +89,7 @@ func (m *HandlerDB) WithdrawBalance(ctx context.Context) http.HandlerFunc {
 			return
 		}
 		//Проверям баланс
-		ResponseBalance, err := m.Storage.GetBalanceDB(ctx, jsonUsers.Login)
+		ResponseBalance, err := m.StorageBalance.GetBalanceDB(ctx, jsonUsers.Login)
 		if err != nil {
 			log.Error("error in add orders in db: ", err)
 			res.WriteHeader(http.StatusBadRequest)
@@ -107,7 +108,7 @@ func (m *HandlerDB) WithdrawBalance(ctx context.Context) http.HandlerFunc {
 		jsonOrders.UserLogin = jsonUsers.Login
 		jsonOrders.StatusOrder = models.WithdrawEnd
 		jsonOrders.Withdraw = wisthdrawSum.Sum
-		err = m.Storage.LoadOrderInDB(ctx, jsonOrders)
+		err = m.StorageBalance.LoadOrderInDB(ctx, jsonOrders)
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
@@ -126,7 +127,7 @@ func (m *HandlerDB) WithdrawBalance(ctx context.Context) http.HandlerFunc {
 			return
 		}
 		//Изменим баланс после списания
-		err = m.Storage.EditBalanceWithdraw(ctx, jsonOrders.UserLogin, wisthdrawSum.Sum)
+		err = m.StorageBalance.EditBalanceWithdraw(ctx, jsonOrders.UserLogin, wisthdrawSum.Sum)
 		if err != nil {
 			log.Error("balance change error: ", err)
 			res.WriteHeader(http.StatusInternalServerError)
@@ -139,7 +140,7 @@ func (m *HandlerDB) WithdrawBalance(ctx context.Context) http.HandlerFunc {
 }
 
 // Получение информации о выводе средств
-func (m *HandlerDB) GetWithdrawals(ctx context.Context) http.HandlerFunc {
+func (m *HandlerBalanceDB) GetWithdrawals(ctx context.Context) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			log.Error("got request with bad method", req.Method)
@@ -155,7 +156,7 @@ func (m *HandlerDB) GetWithdrawals(ctx context.Context) http.HandlerFunc {
 			res.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		withdrawals, err := m.Storage.GetWithdrawalsDB(ctx, userData.Login)
+		withdrawals, err := m.StorageBalance.GetWithdrawalsDB(ctx, userData.Login)
 		if err != nil {
 			if errors.Is(err, pkg.NoOrders) {
 				res.WriteHeader(http.StatusNoContent)
