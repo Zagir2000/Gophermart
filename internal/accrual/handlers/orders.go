@@ -12,19 +12,19 @@ import (
 	"github.com/MlDenis/pkg"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Регаем новый заказ
-func (m *HandlerDB) RegisterNewOrder(ctx context.Context) http.HandlerFunc {
+func (m *HandlerDB) RegisterNewOrder(ctx context.Context, log *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
-			log.Error("got request with bad method", req.Method)
+			log.Error("got request with bad method", zap.String("method", req.Method))
 			res.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 		if req.Header.Get("Content-Type") != "application/json" {
-			log.Error("wrong Content-Type", req.Header.Get("Content-Type"))
+			log.Error("wrong Content-Type", zap.String("method", req.Header.Get("Content-Type")))
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -32,8 +32,14 @@ func (m *HandlerDB) RegisterNewOrder(ctx context.Context) http.HandlerFunc {
 		jsonOrder := &models.OrderForRegister{}
 		dec := json.NewDecoder(req.Body)
 		if err := dec.Decode(jsonOrder); err != nil {
-			log.Error("cannot decode request JSON body", err)
+			log.Error("cannot decode request JSON body", zap.Error(err))
 			res.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		validNumber := luna.Valid(jsonOrder.OrderNumber)
+		if !validNumber {
+			log.Error("invalid order number")
+			res.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
 		//Записываем новый заказ в бд
@@ -47,7 +53,7 @@ func (m *HandlerDB) RegisterNewOrder(ctx context.Context) http.HandlerFunc {
 					return
 				}
 			}
-			log.Error("error in add orders in db", err)
+			log.Error("error in add orders in db", zap.Error(err))
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -58,10 +64,10 @@ func (m *HandlerDB) RegisterNewOrder(ctx context.Context) http.HandlerFunc {
 }
 
 // Получаем accraul заказа и его статус
-func (m *HandlerDB) GetOrder(ctx context.Context) http.HandlerFunc {
+func (m *HandlerDB) GetOrder(ctx context.Context, log *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
-			log.Error("got request with bad method", req.Method)
+			log.Error("got request with bad method", zap.String("method", req.Method))
 			res.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
@@ -69,7 +75,7 @@ func (m *HandlerDB) GetOrder(ctx context.Context) http.HandlerFunc {
 		//Проверяем на алгоритм луна
 		orderID, err := strconv.ParseInt(string(number), 10, 64)
 		if err != nil {
-			log.Error("wrong order number:", err)
+			log.Error("wrong order number:", zap.Error(err))
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -86,13 +92,13 @@ func (m *HandlerDB) GetOrder(ctx context.Context) http.HandlerFunc {
 				res.WriteHeader(http.StatusNoContent)
 				return
 			}
-			log.Error("cannot get user's orders: ", err)
+			log.Error("cannot get user's orders: ", zap.Error(err))
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		ordersJson, err := json.Marshal(orders)
 		if err != nil {
-			log.Error("cannot make json orders: ", err)
+			log.Error("cannot make json orders: ", zap.Error(err))
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}

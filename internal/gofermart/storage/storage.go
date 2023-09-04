@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/MlDenis/internal/gofermart/models"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type Interface interface {
@@ -32,11 +32,11 @@ type InterfaceBalance interface {
 	GetWithdrawalsDB(ctx context.Context, userlogin string) ([]models.WithdrawOrder, error)
 }
 
-func NewStorage(ctx context.Context, migratePath string, postgresDSN string) (Interface, *PostgresDB, error) {
+func NewStorage(ctx context.Context, migratePath string, postgresDSN string, log *zap.Logger) (Interface, *PostgresDB, error) {
 
-	DB, err := InitDB(postgresDSN, migratePath)
+	DB, err := InitDB(postgresDSN, migratePath, log)
 	if err != nil {
-		log.Error("Error in initialization db", (err))
+		log.Error("Error in initialization db", zap.Error(err))
 		return nil, nil, err
 	}
 	return DB, DB, nil

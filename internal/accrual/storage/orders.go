@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/MlDenis/internal/accrual/models"
-	log "github.com/sirupsen/logrus"
 )
 
 // Получение баланса пользователя
 func (pgdb *PostgresDB) GetOrderFromOrdersAccrualDB(ctx context.Context, ordernumber int64) (*models.Order, error) {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return nil, err
 	}
 
@@ -19,7 +18,7 @@ func (pgdb *PostgresDB) GetOrderFromOrdersAccrualDB(ctx context.Context, ordernu
 	row := pgdb.pool.QueryRow(ctx, `SELECT ordernumber,statusorder,accrual FROM public.ordersaccrual WHERE ordernumber=$1`, ordernumber)
 	err = row.Scan(&ordersAccrual.OrderNumber, &ordersAccrual.StatusOrder, &ordersAccrual.Accrual)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return nil, err
 	}
@@ -31,7 +30,7 @@ func (pgdb *PostgresDB) GetOrderFromOrdersAccrualDB(ctx context.Context, ordernu
 func (pgdb *PostgresDB) LoadOrderInOrdersAccrualDB(ctx context.Context, orderForRegister *models.OrderForRegister) error {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 
@@ -40,7 +39,7 @@ func (pgdb *PostgresDB) LoadOrderInOrdersAccrualDB(ctx context.Context, orderFor
 		orderForRegister.OrderNumber, models.RegisteredOrder, 0, orderForRegister.Goods,
 	)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}
@@ -51,7 +50,7 @@ func (pgdb *PostgresDB) LoadOrderInOrdersAccrualDB(ctx context.Context, orderFor
 func (pgdb *PostgresDB) LoadAccrualStatusOrder(ctx context.Context, status string, ordernumber int64, accraul int64) error {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 
@@ -60,7 +59,7 @@ func (pgdb *PostgresDB) LoadAccrualStatusOrder(ctx context.Context, status strin
 		accraul, status, ordernumber,
 	)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}
@@ -71,7 +70,7 @@ func (pgdb *PostgresDB) LoadAccrualStatusOrder(ctx context.Context, status strin
 func (pgdb *PostgresDB) GetAllOrdersAndGoods(ctx context.Context) ([]models.OrderForRegister, error) {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return nil, err
 	}
 	ordersGoods := []models.OrderForRegister{}
@@ -82,14 +81,14 @@ func (pgdb *PostgresDB) GetAllOrdersAndGoods(ctx context.Context) ([]models.Orde
 		orderGoods := models.OrderForRegister{}
 		err = rows.Scan(&orderGoods.OrderNumber, &orderGoods.StatusOrder, &orderGoods.Goods)
 		if err != nil {
-			log.Error(err)
+
 			tx.Rollback(ctx)
 			return nil, err
 		}
 		ordersGoods = append(ordersGoods, orderGoods)
 	}
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return nil, err
 	}

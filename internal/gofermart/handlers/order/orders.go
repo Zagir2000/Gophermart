@@ -12,19 +12,19 @@ import (
 	"github.com/MlDenis/internal/luna"
 	"github.com/MlDenis/pkg"
 	"github.com/jackc/pgx/v5/pgconn"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // авторизация
-func (m *HandlerOrderseDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc {
+func (m *HandlerOrderseDB) LoadOrderNumber(ctx context.Context, log *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
-			log.Error("got request with bad method", req.Method)
+			log.Error("got request with bad method", zap.String("method", req.Method))
 			res.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 		if req.Header.Get("Content-Type") != "text/plain" {
-			log.Error("wrong Content-Type", req.Header.Get("Content-Type"))
+			log.Error("wrong Content-Type: ", zap.String("method", req.Header.Get("Content-Type")))
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -35,20 +35,20 @@ func (m *HandlerOrderseDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc
 		jsonUsers.Token = req.Header.Get(models.HeaderHTTP)
 		err := m.DataJWT.GetToken(jsonUsers)
 		if err != nil {
-			log.Error("user not authenticated", err)
+			log.Error("user not authenticated: ", zap.Error(err))
 			res.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		number, err := io.ReadAll(req.Body)
 		if err != nil {
-			log.Error(err)
+			log.Error("error in read request body: ", zap.Error(err))
 			res.WriteHeader(http.StatusBadRequest)
 		}
 		//проверям заказ через алгоритм луна
 		orderID, err := strconv.ParseInt(string(number), 10, 64)
 		if err != nil {
-			log.Error("wrong order number:", err)
+			log.Error("wrong order number:", zap.Error(err))
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -69,11 +69,11 @@ func (m *HandlerOrderseDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc
 					res.WriteHeader(http.StatusOK)
 					return
 				}
-				log.Error("error in add orders in db", err)
+				log.Error("error in add orders in db: ", zap.Error(err))
 				res.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			log.Error("error in add orders in db", err)
+			log.Error("error in add orders in db: ", zap.Error(err))
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -84,10 +84,10 @@ func (m *HandlerOrderseDB) LoadOrderNumber(ctx context.Context) http.HandlerFunc
 
 }
 
-func (m *HandlerOrderseDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
+func (m *HandlerOrderseDB) GetUserOrder(ctx context.Context, log *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
-			log.Error("got request with bad method", req.Method)
+			log.Error("got request with bad method", zap.String("method", req.Method))
 			res.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
@@ -97,7 +97,7 @@ func (m *HandlerOrderseDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 
 		err := m.DataJWT.GetToken(userData)
 		if err != nil {
-			log.Error("user not authenticated: ", err)
+			log.Error("user not authenticated: ", zap.Error(err))
 			res.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -108,14 +108,14 @@ func (m *HandlerOrderseDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 				res.WriteHeader(http.StatusNoContent)
 				return
 			}
-			log.Error("cannot get user's orders: ", err)
+			log.Error("cannot get user's orders: ", zap.Error(err))
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		ordersJson, err := json.Marshal(orders)
 		if err != nil {
-			log.Error("cannot make json orders: ", err)
+			log.Error("cannot make json orders: ", zap.Error(err))
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -124,7 +124,7 @@ func (m *HandlerOrderseDB) GetUserOrder(ctx context.Context) http.HandlerFunc {
 
 		_, err = res.Write(ordersJson)
 		if err != nil {
-			log.Error("cannot orders json: ", err)
+			log.Error("cannot orders json: ", zap.Error(err))
 			return
 		}
 	}

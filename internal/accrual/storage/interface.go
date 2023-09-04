@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/MlDenis/internal/accrual/models"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type DBInterfaceOrdersAccrual interface {
@@ -18,11 +18,11 @@ type DBInterfaceOrdersAccrual interface {
 	GetAllRewards(ctx context.Context) ([]models.Reward, error)
 }
 
-func NewStorage(ctx context.Context, migratePath string, postgresDSN string) (DBInterfaceOrdersAccrual, *PostgresDB, error) {
+func NewStorage(ctx context.Context, migratePath string, postgresDSN string, log *zap.Logger) (DBInterfaceOrdersAccrual, *PostgresDB, error) {
 
-	DB, err := InitDB(postgresDSN, migratePath)
+	DB, err := InitDB(postgresDSN, migratePath, log)
 	if err != nil {
-		log.Error("Error in initialization db", (err))
+		log.Error("Error in initialization db", zap.Error(err))
 		return nil, nil, err
 	}
 	return DB, DB, nil

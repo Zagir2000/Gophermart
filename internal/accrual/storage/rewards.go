@@ -4,13 +4,12 @@ import (
 	"context"
 
 	"github.com/MlDenis/internal/accrual/models"
-	log "github.com/sirupsen/logrus"
 )
 
 func (pgdb *PostgresDB) RegisterInfoInDB(ctx context.Context, goods *models.Reward) error {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 
@@ -19,7 +18,7 @@ func (pgdb *PostgresDB) RegisterInfoInDB(ctx context.Context, goods *models.Rewa
 		goods.Match, goods.Reward, goods.RewardType,
 	)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}
@@ -29,7 +28,7 @@ func (pgdb *PostgresDB) RegisterInfoInDB(ctx context.Context, goods *models.Rewa
 func (pgdb *PostgresDB) GetAllRewards(ctx context.Context) ([]models.Reward, error) {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return nil, err
 	}
 	rewardArr := []models.Reward{}
@@ -40,14 +39,14 @@ func (pgdb *PostgresDB) GetAllRewards(ctx context.Context) ([]models.Reward, err
 		reward := models.Reward{}
 		err = rows.Scan(&reward.Match, &reward.Reward, &reward.RewardType)
 		if err != nil {
-			log.Error(err)
+
 			tx.Rollback(ctx)
 			return nil, err
 		}
 		rewardArr = append(rewardArr, reward)
 	}
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return nil, err
 	}

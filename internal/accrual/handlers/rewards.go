@@ -9,19 +9,19 @@ import (
 	"github.com/MlDenis/internal/accrual/models"
 	"github.com/MlDenis/pkg"
 	"github.com/jackc/pgx/v5/pgconn"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Регистрация информации о вознаграждении за товар
-func (m *HandlerDB) RegisterInfoReward(ctx context.Context) http.HandlerFunc {
+func (m *HandlerDB) RegisterInfoReward(ctx context.Context, log *zap.Logger) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
-			log.Error("got request with bad method", req.Method)
+			log.Error("got request with bad method", zap.String("method", req.Method))
 			res.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 		if req.Header.Get("Content-Type") != "application/json" {
-			log.Error("wrong Content-Type", req.Header.Get("Content-Type"))
+			log.Error("wrong Content-Type", zap.String("method", req.Header.Get("Content-Type")))
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -29,7 +29,7 @@ func (m *HandlerDB) RegisterInfoReward(ctx context.Context) http.HandlerFunc {
 		jsonGoods := &models.Reward{}
 		dec := json.NewDecoder(req.Body)
 		if err := dec.Decode(jsonGoods); err != nil {
-			log.Error("cannot decode request JSON body", err)
+			log.Error("cannot decode request JSON body", zap.Error(err))
 			res.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -43,7 +43,7 @@ func (m *HandlerDB) RegisterInfoReward(ctx context.Context) http.HandlerFunc {
 					return
 				}
 			}
-			log.Error("error in add in db: ", err)
+			log.Error("error in add in db: ", zap.Error(err))
 			res.WriteHeader(http.StatusConflict)
 			return
 		}

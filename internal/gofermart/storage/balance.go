@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/MlDenis/internal/gofermart/models"
-	log "github.com/sirupsen/logrus"
 )
 
 // Получение баланса пользователя
 func (pgdb *PostgresDB) GetBalanceDB(ctx context.Context, userlogin string) (*models.ResponseBalance, error) {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return nil, err
 	}
 
@@ -19,7 +18,7 @@ func (pgdb *PostgresDB) GetBalanceDB(ctx context.Context, userlogin string) (*mo
 	row := pgdb.pool.QueryRow(ctx, `SELECT sumaccrual,sumwithdraw FROM public.balance WHERE userlogin=$1`, userlogin)
 	err = row.Scan(&ResponseBalance.AccrualSum, &ResponseBalance.WithdrawSum)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return nil, err
 	}
@@ -32,13 +31,13 @@ func (pgdb *PostgresDB) AuthorizationBalance(ctx context.Context, userlogin stri
 
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 
 	_, err = tx.Exec(ctx, `INSERT INTO public.balance (userlogin,sumaccrual,sumwithdraw) VALUES ($1, $2,$3)`, userlogin, models.BalanceAuthAccrualWithdraw, models.BalanceAuthAccrualWithdraw)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}
@@ -51,7 +50,7 @@ func (pgdb *PostgresDB) EditBalanceWithdraw(ctx context.Context, userlogin strin
 
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 
@@ -62,7 +61,7 @@ func (pgdb *PostgresDB) EditBalanceWithdraw(ctx context.Context, userlogin strin
 		sumwithdraw = public.balance.sumwithdraw + EXCLUDED.sumwithdraw `,
 		userlogin, sumwithdraw, sumwithdraw)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}
@@ -75,7 +74,7 @@ func (pgdb *PostgresDB) EditBalanceAccrual(ctx context.Context, userlogin string
 
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 
@@ -84,7 +83,7 @@ func (pgdb *PostgresDB) EditBalanceAccrual(ctx context.Context, userlogin string
 		accrual, userlogin,
 	)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}

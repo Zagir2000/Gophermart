@@ -6,14 +6,13 @@ import (
 
 	"github.com/MlDenis/internal/gofermart/models"
 	"github.com/MlDenis/pkg"
-	log "github.com/sirupsen/logrus"
 )
 
 // записываем заказы пользователя
 func (pgdb *PostgresDB) LoadOrderInDB(ctx context.Context, orders *models.Orders) error {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 	orders.OrderDate = time.Now()
@@ -24,7 +23,7 @@ func (pgdb *PostgresDB) LoadOrderInDB(ctx context.Context, orders *models.Orders
 			orders.OrderNumber, orders.UserLogin, orders.OrderDate, orders.StatusOrder, orders.Withdraw,
 		)
 		if err != nil {
-			log.Error(err)
+
 			tx.Rollback(ctx)
 			return err
 		}
@@ -36,7 +35,7 @@ func (pgdb *PostgresDB) LoadOrderInDB(ctx context.Context, orders *models.Orders
 		orders.OrderNumber, orders.UserLogin, orders.OrderDate, orders.StatusOrder,
 	)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}
@@ -99,7 +98,7 @@ func (pgdb *PostgresDB) GetWithdrawalsDB(ctx context.Context, userlogin string) 
 func (pgdb *PostgresDB) GetAllOrders(ctx context.Context) ([]models.OrdersOnly, error) {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return nil, err
 	}
 	orders := []models.OrdersOnly{}
@@ -121,7 +120,7 @@ func (pgdb *PostgresDB) GetAllOrders(ctx context.Context) ([]models.OrdersOnly, 
 		return orders, pkg.NoOrders
 	}
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return nil, err
 	}
@@ -133,7 +132,7 @@ func (pgdb *PostgresDB) GetAllOrders(ctx context.Context) ([]models.OrdersOnly, 
 func (pgdb *PostgresDB) EditStatusAndAccrualOrder(ctx context.Context, status string, accrual, ordernumber int64) error {
 	tx, err := pgdb.pool.Begin(ctx)
 	if err != nil {
-		log.Error(err)
+
 		return err
 	}
 
@@ -142,7 +141,7 @@ func (pgdb *PostgresDB) EditStatusAndAccrualOrder(ctx context.Context, status st
 		accrual, status, ordernumber,
 	)
 	if err != nil {
-		log.Error(err)
+
 		tx.Rollback(ctx)
 		return err
 	}

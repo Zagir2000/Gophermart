@@ -7,30 +7,30 @@ import (
 
 	"github.com/MlDenis/internal/accrual/models"
 	"github.com/MlDenis/internal/accrual/storage"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // WorkerPool принимает канал данных, порождает 10 горутин
-func WorkerPool(ctx context.Context, s storage.DBInterfaceOrdersAccrual, rateLimit int) {
+func WorkerPool(ctx context.Context, s storage.DBInterfaceOrdersAccrual, rateLimit int, log *zap.Logger) {
 	jobs := make(chan models.GoodsWithReward, rateLimit)
 	// g := new(errgroup.Group)
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(time.Duration(30) * time.Second):
+		case <-time.After(time.Duration(100) * time.Second):
 			for w := 1; w <= rateLimit; w++ {
-				go findMatch(ctx, jobs, s)
+				go resultAccrual(ctx, jobs, s, log)
 			}
 
-			go OrdersGoodsGorutine(ctx, jobs, s)
+			go OrdersGoodsGorutine(ctx, jobs, s, log)
 		}
 
 	}
 
 }
 
-func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.GoodsWithReward, s storage.DBInterfaceOrdersAccrual) {
+func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.GoodsWithReward, s storage.DBInterfaceOrdersAccrual, log *zap.Logger) {
 
 	// select {
 	// case <-ctx.Done():
@@ -39,13 +39,13 @@ func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.GoodsWithRe
 	goodsWithReward := models.GoodsWithReward{}
 	rewards, err := s.GetAllRewards(ctx)
 	if err != nil {
-		log.Error("error in get rewards from db: ", err)
+		log.Error("error in get rewards from db: ", zap.Error(err))
 		goodsWithReward.OrderNumber = 0
 		return
 	}
 	ordersWithGoods, err := s.GetAllOrdersAndGoods(ctx)
 	if err != nil {
-		log.Error("error in get orders from db: ", err)
+		log.Error("error in get orders from db: ", zap.Error(err))
 		goodsWithReward.OrderNumber = 0
 		return
 	}
@@ -54,7 +54,7 @@ func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.GoodsWithRe
 		if ordersWithGoods[i].StatusOrder != models.ProcessedOrder || ordersWithGoods[i].StatusOrder != models.InvalidOrder {
 			err := s.LoadAccrualStatusOrder(ctx, models.ProcessingOrder, goodsWithReward.OrderForRegister.OrderNumber, 0)
 			if err != nil {
-				log.Error("error in add orders from db: ", err)
+				log.Error("error in add orders from db: ", zap.Error(err))
 				return
 			}
 			goodsWithReward.OrderForRegister = ordersWithGoods[i]
@@ -63,10 +63,10 @@ func OrdersGoodsGorutine(ctx context.Context, ordersChan chan models.GoodsWithRe
 	}
 }
 
-func findMatch(ctx context.Context, orderAndReward1 chan models.GoodsWithReward, s storage.DBInterfaceOrdersAccrual) {
+func resultAccrual(ctx context.Context, orderAndRewardChan chan models.GoodsWithReward, s storage.DBInterfaceOrdersAccrual, log *zap.Logger) {
 
 	var accraulSum int64 = 0
-	orderAndReward := <-orderAndReward1
+	orderAndReward := <-orderAndRewardChan
 	if orderAndReward.OrderNumber == 0 {
 		return
 	}
@@ -76,10 +76,10 @@ func findMatch(ctx context.Context, orderAndReward1 chan models.GoodsWithReward,
 			if err != nil {
 				err := s.LoadAccrualStatusOrder(ctx, models.InvalidOrder, orderAndReward.OrderNumber, 0)
 				if err != nil {
-					log.Error("error in add orders from db: ", err)
+					log.Error("error in add orders from db: ", zap.Error(err))
 					return
 				}
-				log.Error("error in get orders from db: ", err)
+				log.Error("error in get orders from db: ", zap.Error(err))
 				return
 			}
 			if matched {
@@ -90,7 +90,7 @@ func findMatch(ctx context.Context, orderAndReward1 chan models.GoodsWithReward,
 	}
 	err := s.LoadAccrualStatusOrder(ctx, models.ProcessedOrder, orderAndReward.OrderNumber, accraulSum)
 	if err != nil {
-		log.Error("error in add orders from db: ", err)
+		log.Error("error in add orders from db: ", zap.Error(err))
 		return
 	}
 

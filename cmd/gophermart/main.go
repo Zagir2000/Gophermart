@@ -9,6 +9,8 @@ import (
 	"github.com/MlDenis/internal/gofermart/handlers"
 	"github.com/MlDenis/internal/gofermart/interactionwithaccrual"
 	"github.com/MlDenis/internal/gofermart/storage"
+	"github.com/MlDenis/logger"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -22,20 +24,23 @@ func main() {
 	}
 }
 func run(flagStruct *FlagVar) error {
-
-	ctx := context.Background()
-	memStorageInterface, postgresDB, err := storage.NewStorage(ctx, flagStruct.migrationsDir, flagStruct.databaseURI)
+	log, err := logger.InitializeLogger(flagStruct.logLevel)
 	if err != nil {
-		log.Fatal("Error in create storage: ", err)
+		return err
+	}
+	ctx := context.Background()
+	memStorageInterface, postgresDB, err := storage.NewStorage(ctx, flagStruct.migrationsDir, flagStruct.databaseURI, log)
+	if err != nil {
+		log.Fatal("Error in create storage: ", zap.Error(err))
 	}
 	if postgresDB != nil {
 		defer postgresDB.Close()
 	}
 	JWTForSession := cache.NewDataJWT()
 	newHandStruct := handlers.HandlerNew(memStorageInterface, JWTForSession)
-	router := handlers.Router(ctx, newHandStruct)
-	go interactionwithaccrual.WorkerPool(ctx, memStorageInterface, flagStruct.rateLimit, flagStruct.acuralSystemAddress)
-	log.Println("Running server on: ", flagStruct.runAddr)
+	go interactionwithaccrual.WorkerPool(ctx, memStorageInterface, flagStruct.rateLimit, flagStruct.acuralSystemAddress, log)
+	router := handlers.Router(ctx, log, newHandStruct)
+	log.Info("Running server on: ", zap.String("", flagStruct.runAddr))
 	return http.ListenAndServe(flagStruct.runAddr, router)
 }
 
