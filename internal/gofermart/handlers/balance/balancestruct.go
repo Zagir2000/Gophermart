@@ -1,4 +1,4 @@
-package handlers
+package balance
 
 import (
 	"github.com/MlDenis/internal/gofermart/auth/cache"
@@ -6,14 +6,15 @@ import (
 )
 
 // структура для наших хэндлеров, далее надо будет добавить возмонжо логер и тд
-type HandlerDB struct {
-	Storage storage.Interface
+type HandlerBalanceDB struct {
+	StorageBalance storage.InterfaceBalance
+
 	DataJWT *cache.DataJWT
 }
 
-func HandlerNew(s storage.Interface, DataJWT *cache.DataJWT) *HandlerDB {
-	return &HandlerDB{
-		Storage: s,
-		DataJWT: DataJWT,
+func HandlerBalance(balance storage.InterfaceBalance, DataJWT *cache.DataJWT) *HandlerBalanceDB {
+	return &HandlerBalanceDB{
+		StorageBalance: balance,
+		DataJWT:        DataJWT,
 	}
 }
